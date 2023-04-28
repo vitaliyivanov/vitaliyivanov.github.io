@@ -20,6 +20,10 @@ async function start() {
   // Create a WebGL context for rendering in WebXR
   const gl = canvas.getContext('webgl', { xrCompatible: true });
 
+  renderer = new THREE.WebGLRenderer({ alpha: true, preserveDrawingBuffer:true });
+  renderer.setClearColor( 0x000000, 0 );
+
+
   // Create a WebXR session
   const xrSession = await navigator.xr.requestSession('immersive-ar', {
     requiredFeatures: ['hit-test'],
