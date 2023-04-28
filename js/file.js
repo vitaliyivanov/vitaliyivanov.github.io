@@ -1,8 +1,3 @@
-// Get the button element
-const button = document.getElementById('start-button');
-
-// Add an event listener to the button
-button.addEventListener('click', start);
 
 async function start() {
   // Load the model
