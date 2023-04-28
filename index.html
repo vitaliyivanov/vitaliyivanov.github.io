@@ -4,14 +4,41 @@
     <meta charset="UTF-8" />
     <title>Object Detection with WebXR and TensorFlow.js</title>
     <style>
-      #canvas {
+      #canvas, #video {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
+        object-fit: cover;
+      }
+      #button {
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 1;
       }
     </style>
 </head>
 <body>
+<div id="button-container">
+    <button id="start-button">Start AR Experience</button>
+</div>
+<video id="video" autoplay></video>
 <canvas id="canvas"></canvas>
+
+
 <!-- Load TensorFlow.js. This is required to use MobileNet. -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"> </script>
 <!-- Load the MobileNet model. -->
