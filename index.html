@@ -30,6 +30,14 @@
 			z-index: 1;
       }
     </style>
+    <!-- Load TensorFlow.js. This is required to use MobileNet. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"> </script>
+    <!-- Load the MobileNet model. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
+
+    <script src="js/file.js"></script>
 </head>
 <body>
 <div id="button-container">
@@ -37,16 +45,6 @@
 </div>
 <video id="video" autoplay></video>
 <canvas id="canvas"></canvas>
-
-
-<!-- Load TensorFlow.js. This is required to use MobileNet. -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"> </script>
-<!-- Load the MobileNet model. -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
-
-<script src="js/file.js"></script>
 
 </body>
 </html>
