@@ -1,63 +1,56 @@
-// Create a video element to capture the camera feed
-const video = document.createElement('video');
-video.autoplay = true;
-video.playsInline = true;
+let camera, scene, renderer, video;
 
-// Create a Three.js scene and camera
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+init();
+animate();
 
-// Create a plane to display the camera feed
-const geometry = new THREE.PlaneGeometry(4, 3);
-const material = new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) });
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+function init() {
+    // Create a video element to capture the camera feed
+    video = document.getElementById('video');
+    video.autoplay = true;
+    video.playsInline = true;
 
-// Set up the WebXR session
-let xrSession = null;
-navigator.xr.requestSession('immersive-ar', {
-  requiredFeatures: ['hit-test']
-}).then(session => {
-  xrSession = session;
 
-  // Create a reference space and add it to the session
-  xrSession.requestReferenceSpace('viewer').then(referenceSpace => {
-    xrSession.updateRenderState({
-      baseLayer: new XRWebGLLayer(xrSession, renderer)
-    });
+    // Create a Three.js scene and camera
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 0.01;
 
-    // Add the camera feed to the scene
+    // Create a plane to display the camera feed
+    const geometry = new THREE.PlaneGeometry(16, 9);
+    geometry.scale( 0.5, 0.5, 0.5 );
+    const material = new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.lookAt( camera.position );
     scene.add(mesh);
 
-    // Start rendering the scene in the WebXR session
-    function render(timestamp, frame) {
-      const pose = frame.getViewerPose(referenceSpace);
+    // Create a renderer and add it to the DOM
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
 
-      if (pose) {
-        const view = pose.views[0];
-        camera.projectionMatrix.fromArray(view.projectionMatrix);
-        camera.matrix.fromArray(view.transform.matrix);
-        camera.updateMatrixWorld();
+    window.addEventListener( 'resize', onWindowResize );
 
-        // Update the video texture with the camera feed
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          videoTexture.needsUpdate = true;
-        }
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                    }).catch( function ( error ) {
 
-        renderer.render(scene, camera);
-      }
+                                            console.error( 'Unable to access the camera/webcam.', error );
 
-      xrSession.requestAnimationFrame(render);
-    }
+                                        } );
+}
 
-    xrSession.requestAnimationFrame(render);
-  });
-}).catch(console.error);
+// Render the scene
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
 
-// Create a renderer and add it to the DOM
-const renderer = new THREE.WebGLRenderer({
-  alpha: true,
-  preserveDrawingBuffer: true
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight);
+}
+
