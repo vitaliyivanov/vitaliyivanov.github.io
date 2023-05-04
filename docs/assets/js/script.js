@@ -32,7 +32,8 @@ function enableCam(event) {
 
   // getUsermedia parameters to force video but not audio.
   const constraints = {
-    video: { facingMode: { exact: "environment" } }
+    //video: { facingMode: { exact: "environment" } }
+    video: true
   };
 
   // Activate the webcam stream.
@@ -73,6 +74,7 @@ function predictWebcam() {
       // If we are over 66% sure we are sure we classified it right, draw it!
       if (predictions[n].score > 0.66) {
         const p = document.createElement('p');
+        console.log(predictions[n]);
         p.innerText = predictions[n].class  + ' - with '
             + Math.round(parseFloat(predictions[n].score) * 100)
             + '% confidence.';
