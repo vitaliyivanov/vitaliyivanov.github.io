@@ -48,25 +48,16 @@ function initWebGL() {
     const geometry = new THREE.PlaneGeometry(fov_x, fov_y);
     const material = new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) });
     const mesh = new THREE.Mesh(geometry, material);
-    //mesh.renderOrder = 0;
     scene.add(mesh);
 
-    const geo = new THREE.PlaneGeometry(1, 1);
-    const mat = new THREE.MeshBasicMaterial({
-                                           color: '#cc338b',
-                                           transparent: true,
-                                           opacity: 0.5,
-                                           wireframe: true,
-                                         });
-
-    const object = new THREE.Mesh(geo, mat);
-//    object.scale.x = 0.8;
-//    object.scale.y = 0.8;
-    object.position.set(0,0,0);
-//    scene.add(object);
 
     // Create a renderer and add it to the DOM
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true,
+      xrCompatible: true
+    });
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
