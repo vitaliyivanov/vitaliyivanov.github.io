@@ -106,7 +106,7 @@ async function initXR(){
     xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, renderer.getContext()) });
 
     // Wait until the XR session is initialized before creating the plane geometry
-    xrSession.requestReferenceSpace('local').then((refSpace) => {
+    await xrSession.requestReferenceSpace('local').then((refSpace) => {
 
        // camera.aspect = renderer.domElement.width / renderer.domElement.height;
        // camera.updateProjectionMatrix();
