@@ -3,10 +3,18 @@ import * as THREE from 'three';
 let camera, scene, renderer, video, xrSession, model, modelReady, fov_x, fov_y, videoWidth, videoHeight;
 let objectsToRemove = [];
 
-initWebGL();
-initXR();
-window.addEventListener( 'resize', onWindowResize );
+const enableWebcamButton = document.getElementById('enableAR');
 
+// If webcam supported, add event listener to button for when user
+// wants to activate it to call enableCam function which we will
+// define in the next step.
+enableWebcamButton.addEventListener('click', start);
+
+function start() {
+    initWebGL();
+    initXR();
+    window.addEventListener( 'resize', onWindowResize );
+}
 
 function initWebGL() {
     // Get a video element to capture the camera feed
