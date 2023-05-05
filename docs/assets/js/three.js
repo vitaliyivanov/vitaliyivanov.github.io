@@ -3,16 +3,28 @@ import * as THREE from 'three';
 let camera, scene, renderer, video, xrSession, model, modelReady, fov_x, fov_y, videoWidth, videoHeight;
 let objectsToRemove = [];
 
-const enableWebcamButton = document.getElementById('enableAR');
+//const enableWebcamButton = document.getElementById('enableAR');
 
-// If webcam supported, add event listener to button for when user
-// wants to activate it to call enableCam function which we will
-// define in the next step.
-enableWebcamButton.addEventListener('click', start);
 
-function start() {
+// Check to see if there is an XR device available that supports immersive VR
+  // presentation (for example: displaying in a headset). If the device has that
+  // capability the page will want to add an "Enter VR" button to the page (similar to
+  // a "Fullscreen" button) that starts the display of immersive VR content.
+  navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+    if (supported) {
+      var enterXrBtn = document.createElement("button");
+      enterXrBtn.innerHTML = "Enter AR";
+      enterXrBtn.addEventListener("click", beginXRSession);
+      document.body.appendChild(enterXrBtn);
+    } else {
+      console.log("Session not supported: " + reason);
+    }
+  });
+
+
+async function beginXRSession() {
     initWebGL();
-    initXR();
+    await initXR();
     window.addEventListener( 'resize', onWindowResize );
 }
 
