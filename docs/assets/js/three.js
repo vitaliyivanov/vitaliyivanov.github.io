@@ -102,9 +102,17 @@ function initScene(gl, session) {
 
     window.addEventListener('resize', onWindowResize);
 
+    const isMobile = navigator.userAgentData.mobile;
+
+    let constraints;
+    if (isMobile) {
+        constraints = {facingMode: { exact: "environment" }}
+    } else {
+        constraints = {video : true}
+    }
 
     // Start capturing the camera feed
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
             video.srcObject = stream;
             video.addEventListener('loadeddata', initTFModel);
