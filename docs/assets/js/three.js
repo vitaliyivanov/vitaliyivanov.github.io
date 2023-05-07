@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-let camera, scene, renderer, video, xrSession, model, modelReady, fov_x, fov_y, videoWidth, videoHeight;
+let camera, scene, renderer, video, xrSession, model, modelReady, fov_x, fov_y, videoWidth, videoHeight, gl, xrRefSpace;
 let objectsToRemove = [];
 
 //const enableWebcamButton = document.getElementById('enableAR');
@@ -21,24 +21,60 @@ let objectsToRemove = [];
     }
   });
 
-
-async function beginXRSession() {
-    initWebGL();
-    await initXR();
-    window.addEventListener( 'resize', onWindowResize );
+function beginXRSession() {
+   if (!xrSession) {
+               navigator.xr.requestSession('immersive-ar').then(onSessionStarted, onRequestSessionError);
+           } else {
+            xrSession.end();
+   }
 }
 
-function initWebGL() {
-    // Get a video element to capture the camera feed
-    video = document.getElementById('video');
-    video.autoplay = true;
-    video.playsInline = true;
+function onSessionStarted(session) {
+        xrSession = session;
+//        xrButton.innerHTML = 'Exit AR';
+//
+//        // Show which type of DOM Overlay got enabled (if any)
+//        if (session.domOverlayState) {
+//          info.innerHTML = 'DOM Overlay type: ' + session.domOverlayState.type;
+//        }
 
-    // Create a Three.js scene and camera
+        // create a canvas element and WebGL context for rendering
+        session.addEventListener('end', onSessionEnded);
+        let canvas = document.createElement('canvas');
+        gl = canvas.getContext('webgl', { xrCompatible: true });
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+        // here we ask for viewer reference space, since we will be casting a ray
+        // from a viewer towards a detected surface. The results of ray and surface intersection
+        // will be obtained via xrHitTestSource variable
+//        session.requestReferenceSpace('viewer').then((refSpace) => {
+//          session.requestHitTestSource({ space: refSpace }).then((hitTestSource) => {
+//            xrHitTestSource = hitTestSource;
+//          });
+//        });
+
+        session.requestReferenceSpace('local').then((refSpace) => {
+          xrRefSpace = refSpace;
+          session.requestAnimationFrame(render);
+        });
+
+        ///document.getElementById("overlay").addEventListener('click', placeObject);
+
+        // initialize three.js scene
+        initScene(gl, session);
+      }
+
+function initScene(gl, session) {
+    // Get a video element to capture the camera feed
+            video = document.getElementById('video');
+            video.autoplay = true;
+            video.playsInline = true;
+
+
+     // Create a Three.js scene and camera
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10);
     camera.position.z = 1;
-
 
     //Creating the plane geometry for camera feed and make it full screen
     let ang_rad = camera.fov * Math.PI / 180;
@@ -56,11 +92,16 @@ function initWebGL() {
       antialias: true,
       alpha: true,
       preserveDrawingBuffer: true,
-      xrCompatible: true
+      context: gl
     });
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.xr.enabled = true;
+    renderer.xr.setSession(session);
     document.body.appendChild( renderer.domElement );
+
+    window.addEventListener('resize', onWindowResize);
+
 
     // Start capturing the camera feed
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -90,34 +131,24 @@ function initTFModel(){
     });
 }
 
-async function initXR(){
-    // Create a WebXR session
-    xrSession = await navigator.xr.requestSession('immersive-ar');
-
-    xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, renderer.getContext()) });
-
-    // Wait until the XR session is initialized before creating the plane geometry
-    await xrSession.requestReferenceSpace('local').then((refSpace) => {
-
-       // camera.aspect = renderer.domElement.width / renderer.domElement.height;
-       // camera.updateProjectionMatrix();
-
-        // Start the rendering loop
-        xrSession.requestAnimationFrame(render);
-    });
-}
-
 function render(t, frame){
     let session = frame.session;
 
+
     //Object detection and generate object meshes for scene
     predict();
+
+    // bind our gl context that was created with WebXR to threejs renderer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
 
     // Render the scene
     renderer.render(scene, camera);
 
     // Continue the rendering loop
-    xrSession.requestAnimationFrame(render);
+            xrSession.requestAnimationFrame(render);
+
+
+
 }
 
 function predict(){
@@ -185,3 +216,17 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight);
 }
+
+function onRequestSessionError(ex) {
+        //info.innerHTML = "Failed to start AR session.";
+        console.error(ex.message);
+}
+
+function onSessionEnded(event) {
+        xrSession = null;
+        //xrButton.innerHTML = 'Enter AR';
+        //info.innerHTML = '';
+        gl = null;
+        //if (xrHitTestSource) xrHitTestSource.cancel();
+        //xrHitTestSource = null;
+      }
