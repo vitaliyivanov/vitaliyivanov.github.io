@@ -104,11 +104,9 @@ function initScene(gl, session) {
 
     const isMobile = navigator.userAgentData.mobile;
 
-    let constraints;
+    const constraints = {video : true};
     if (isMobile) {
-        constraints = {facingMode: { exact: "environment" }}
-    } else {
-        constraints = {video : true}
+        constraints = {video: {facingMode: { exact: "environment" }}};
     }
 
     // Start capturing the camera feed
