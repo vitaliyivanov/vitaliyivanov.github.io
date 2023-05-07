@@ -104,7 +104,7 @@ function initScene(gl, session) {
 
     const isMobile = navigator.userAgentData.mobile;
 
-    const constraints = {video : true};
+    let constraints = {video : true};
     if (isMobile) {
         constraints = {video: {facingMode: { exact: "environment" }}};
     }
